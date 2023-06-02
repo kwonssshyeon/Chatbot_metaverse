@@ -140,7 +140,7 @@ def answer_in_context(question, context):
     
     inputs = QA_tokenizer(question, context, return_tensors='pt')
     model = AutoModelForQuestionAnswering.from_pretrained(QA_MODEL)
-
+    
     with torch.no_grad():
         outputs = model(**inputs)
     start_logits = outputs.start_logits
@@ -213,7 +213,7 @@ def make_convo( model,tokenizer, kd : dict) :
             matching_answer = get_answer(data=kd[category],question=user_input)
 
             #카테고리 o 질문 o (카테고리 x 질문 o)
-            if(matching_answer[1] > 0.5):
+            if(matching_answer[1] > 0.9):
                 answer = matching_answer[0]
                 find_answer = True
 
@@ -222,8 +222,9 @@ def make_convo( model,tokenizer, kd : dict) :
                 context = get_context(kd[category],user_input,512-64,tokenizer)
                 if(context!=""):
                     answer = answer_in_context(user_input,context)
+                    
 
-                else:
+                if(context=="" or answer == "[CLS]"):
                     prompt = hist_with_input+"#####\nPrevious_chat\n\n"+QA_hist+"\n#####\n"+"\n\n### Instruction(명령어):\n"+user_input+"\n\n### Response(응답):" 
                     answer = generate_answer(user_input,prompt)
                 find_answer=True
